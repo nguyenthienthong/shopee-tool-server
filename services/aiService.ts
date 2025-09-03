@@ -1,44 +1,26 @@
 // services/aiService.ts
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Check if API key exists, if not use a dummy client for development
-const apiKey = process.env.OPENAI_API_KEY;
-let client: OpenAI;
-
-if (apiKey && apiKey !== "test_key_for_development") {
-  client = new OpenAI({ apiKey });
-} else {
-  // Dummy client for development/testing
-  client = {} as OpenAI;
-}
+const genAI = new GoogleGenerativeAI("AIzaSyB7twsGDw6oKGQoD1lj1SQaG4bFn3r4o6U");
 
 export async function generateDescription(
   productName: string,
   features: string[]
 ): Promise<string> {
   try {
-    // If no real API key, return mock response for development
-    if (!apiKey || apiKey === "test_key_for_development") {
-      return `[MOCK] Mô tả sản phẩm ${productName} với các tính năng: ${features.join(
-        ", "
-      )}. Đây là mô tả mẫu được tạo trong môi trường development.`;
-    }
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Viết mô tả sản phẩm Shopee chuẩn SEO, tone chuyên nghiệp.
-  Tên sản phẩm: ${productName}
-  Tính năng: ${features.join(", ")}
-  `;
+Tên sản phẩm: ${productName}
+Tính năng: ${features.join(", ")}`;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-    });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    return (
-      completion.choices[0].message.content || "Không thể tạo mô tả sản phẩm"
-    );
+    return text || "Không thể tạo mô tả sản phẩm";
   } catch (error) {
-    console.error("Error generating description:", error);
+    console.error("Error generating description with Gemini:", error);
     throw new Error("Không thể tạo mô tả sản phẩm");
   }
 }
