@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import captionRouter from "./routers/cation";
+import imageRouter from "./routers/image";
 
 const app = express();
 
@@ -16,5 +17,6 @@ app.get("/", (req, res) =>
 );
 
 app.use("/api/caption", captionRouter);
+app.use("/api/image", imageRouter);
 
 export default app;
