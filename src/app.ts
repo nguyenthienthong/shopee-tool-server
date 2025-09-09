@@ -5,6 +5,7 @@ import morgan from "morgan";
 import captionRouter from "./routers/cation";
 import imageRouter from "./routers/image";
 import aiProductManagerRouter from "./routers/aiProductManager";
+import codeGeneratorRouter from "./routers/codeGenerator";
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.get("/", (req, res) =>
 app.use("/api/caption", captionRouter);
 app.use("/api/image", imageRouter);
 app.use("/api/ai-product-manager", aiProductManagerRouter);
+app.use("/api/code-generator", codeGeneratorRouter);
 
 export default app;

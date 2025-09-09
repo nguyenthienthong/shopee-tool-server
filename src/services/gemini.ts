@@ -4,26 +4,25 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict";
 
-export async function generateCaptionFromGemini(
-  captionConfig: {
-    type: string;
-    topic: string;
-    tone: string;
-    length: string;
-    platform: string;
-    description: string;
-  }
-) {
+export async function generateCaptionFromGemini(captionConfig: {
+  type: string;
+  topic: string;
+  tone: string;
+  length: string;
+  platform: string;
+  description: string;
+}) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Bạn là chuyên gia marketing cho sàn thương mại điện tử Việt Nam.
-Viết 3 biến thể caption ${captionConfig.length} (mỗi caption < 140 ký tự) cho ${captionConfig.topic}, phù hợp để đăng trên ${captionConfig.platform}.
+    const prompt = `Bạn là chuyên gia Content Creator.
+Viết 1 content có độ dài là ${captionConfig.length} ký tự cho ${
+      captionConfig.topic
+    }, phù hợp để đăng trên ${captionConfig.platform}.
 Yêu cầu: 
 - Tone: ${captionConfig.tone}
 - Loại nội dung: ${captionConfig.type}
-- Mô tả: ${captionConfig.description || "Không có mô tả cụ thể"}
-Trả về output ở định dạng JSON: { "captions": ["...", "...", "..."] }`;
+- Mô tả: ${captionConfig.description || "Không có mô tả cụ thể"}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -37,7 +36,7 @@ Trả về output ở định dạng JSON: { "captions": ["...", "...", "..."] }
         .replace(/\s*```/, "")
         .trim();
       const parsed = JSON.parse(cleanText);
-      if (parsed && Array.isArray(parsed.captions)) return parsed.captions;
+      if (parsed && Array.isArray(parsed.content)) return parsed.content;
     } catch (err) {
       // fallback: tách newline và tìm các dòng có nội dung caption
       const lines = text
@@ -48,17 +47,17 @@ Trả về output ở định dạng JSON: { "captions": ["...", "...", "..."] }
             l.length > 0 &&
             !l.startsWith("{") &&
             !l.startsWith("}") &&
-            !l.startsWith('"captions"')
+            !l.startsWith('"content"')
         )
         .filter(Boolean);
       // lấy tối đa 3 dòng
-      return lines.slice(0, 3);
+      return lines.slice(0, 1);
     }
 
-    return [text];
+    return text;
   } catch (error) {
     console.error("Error generating caption with Gemini:", error);
-    throw new Error("Không thể tạo caption sản phẩm");
+    throw new Error("Không thể tạo content");
   }
 }
 
