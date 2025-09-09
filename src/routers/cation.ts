@@ -8,25 +8,46 @@ const router = express.Router();
 /**
  * POST /api/caption
  * body: {
- *   name: string,
- *   keywords?: string[],   // optional array of keyword strings
- *   style?: string         // optional: "vui nhộn", "chuyên nghiệp", etc.
+ *   type: string,          // e.g., "product-description"
+ *   topic: string,         // e.g., "new product"
+ *   tone: string,          // e.g., "professional"
+ *   length: string,        // e.g., "short"
+ *   platform: string,      // e.g., "facebook"
+ *   description: string    // optional description
  * }
  */
 router.post("/", authOptional, captionRateLimiter, async (req, res) => {
   try {
-    const { name, keywords, style } = req.body;
-    if (!name || typeof name !== "string") {
-      return res.status(400).json({ error: "Missing product name" });
+    const { type, topic, tone, length, platform, description } = req.body;
+    
+    // Validate required fields
+    if (!type || typeof type !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'type' field" });
     }
-    const kwArray: string[] = Array.isArray(keywords)
-      ? keywords.map(String).filter(Boolean)
-      : typeof keywords === "string" && keywords.length
-      ? keywords.split(",").map((s) => s.trim())
-      : [];
+    if (!topic || typeof topic !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'topic' field" });
+    }
+    if (!tone || typeof tone !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'tone' field" });
+    }
+    if (!length || typeof length !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'length' field" });
+    }
+    if (!platform || typeof platform !== "string") {
+      return res.status(400).json({ error: "Missing or invalid 'platform' field" });
+    }
 
-    const captions = await generateCaptionFromGemini(name, kwArray, style);
-    // Optionally: save usage to DB (user, productName, timestamp) for analytics/billing
+    const captionConfig = {
+      type,
+      topic,
+      tone,
+      length,
+      platform,
+      description: description || ""
+    };
+
+    const captions = await generateCaptionFromGemini(captionConfig);
+    // Optionally: save usage to DB (user, captionConfig, timestamp) for analytics/billing
     return res.json({ captions });
   } catch (err: any) {
     console.error("Caption generation error:", err?.message ?? err);

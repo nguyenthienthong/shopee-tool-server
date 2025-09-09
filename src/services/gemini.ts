@@ -5,20 +5,24 @@ const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict";
 
 export async function generateCaptionFromGemini(
-  productName: string,
-  keywords: string[],
-  style?: string
+  captionConfig: {
+    type: string;
+    topic: string;
+    tone: string;
+    length: string;
+    platform: string;
+    description: string;
+  }
 ) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const styleText = style ? `Phong cách: ${style}.` : "";
     const prompt = `Bạn là chuyên gia marketing cho sàn thương mại điện tử Việt Nam.
-Viết 3 biến thể caption ngắn (mỗi caption < 140 ký tự) cho sản phẩm, phù hợp để đăng trên Shopee hoặc Lazada.
-Yêu cầu: chèn tự nhiên các từ khóa: ${keywords.join(
-      ", "
-    )} (nếu có). ${styleText}
-Tên sản phẩm: ${productName}
+Viết 3 biến thể caption ${captionConfig.length} (mỗi caption < 140 ký tự) cho ${captionConfig.topic}, phù hợp để đăng trên ${captionConfig.platform}.
+Yêu cầu: 
+- Tone: ${captionConfig.tone}
+- Loại nội dung: ${captionConfig.type}
+- Mô tả: ${captionConfig.description || "Không có mô tả cụ thể"}
 Trả về output ở định dạng JSON: { "captions": ["...", "...", "..."] }`;
 
     const result = await model.generateContent(prompt);

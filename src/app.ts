@@ -4,6 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import captionRouter from "./routers/cation";
 import imageRouter from "./routers/image";
+import aiProductManagerRouter from "./routers/aiProductManager";
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.get("/", (req, res) =>
 
 app.use("/api/caption", captionRouter);
 app.use("/api/image", imageRouter);
+app.use("/api/ai-product-manager", aiProductManagerRouter);
 
 export default app;
